@@ -10,6 +10,7 @@ export default function Timer({name, duration, removeTimer}:TimerProps & TimerFu
   const interval = useRef<number | null>(null);
   const timerctx = useTimerContext();
   const {isRunning} = timerctx;
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(isRunning);
   
   if(remainingTime<=0)
   {
@@ -22,19 +23,29 @@ export default function Timer({name, duration, removeTimer}:TimerProps & TimerFu
     },50);
     interval.current = timer;
   }
+  useEffect(()=>{
+    setIsTimerRunning(isRunning)
+  },[isRunning])
 
   useEffect(()=>{
     const timer = interval.current!
-
+    if(isTimerRunning)
+    {
+      runTimer();
+    }
+    else
+    {
+      clearInterval(interval.current!)
+    }
     return ()=>clearInterval(timer);
-  },[isRunning])
+  },[isTimerRunning])
   
   return (
     <Container as="article">
       <h2>{name}</h2>
       <p><progress max={duration*1000} value={remainingTime} />{(remainingTime/1000).toFixed(0)}</p>
       <div style={{display:'flex', justifyContent:'center', gap:'10px'}}>
-        <Button onClick={()=>runTimer()}>Run timer</Button>
+        <Button onClick={()=>setIsTimerRunning(!isTimerRunning)}>{isTimerRunning?  `Stop` : 'Run'} timer</Button>
         <Button onClick={()=>removeTimer(name)}> Remove Timer</Button>
       </div>
     </Container>
